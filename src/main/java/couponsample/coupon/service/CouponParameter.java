@@ -17,9 +17,6 @@ public class CouponParameter {
     @NotNull
     private Long price;
 
-    @NotBlank
-    private Coupon.State state;
-
     @Valid @NotNull
     private StockParameter stock;
 }

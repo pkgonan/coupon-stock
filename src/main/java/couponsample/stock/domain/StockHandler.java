@@ -1,11 +1,12 @@
 package couponsample.stock.domain;
 
-import couponsample.atomiclong.domain.AtomicLong;
+import couponsample.counter.domain.Counter;
 import couponsample.stock.exception.StockHandleFailureException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
+import java.util.Optional;
 import java.util.function.Consumer;
 
 @Slf4j
@@ -18,10 +19,6 @@ public final class StockHandler {
         this.operator = operator;
     }
 
-    public final boolean tryIncrease(final String key) {
-        return tryIncrease(key, 1L);
-    }
-
     public final boolean tryDecrease(final String key) {
         return tryDecrease(key, 1L);
     }
@@ -32,19 +29,6 @@ public final class StockHandler {
 
     public final void safeDecrease(final String key) {
         safeDecrease(key, 1L);
-    }
-
-    public final boolean tryIncrease(final String key, final long value) {
-        final Consumer<Boolean> doOnSuccessConsumer = (safe) -> {
-            if (Boolean.FALSE.equals(safe)) {
-                decrease(key, value);
-            }
-        };
-
-        return operator.increaseAndGet(key, value)
-                .flatMap(val -> Mono.justOrEmpty(isSafeValue(val)))
-                .doOnSuccess(doOnSuccessConsumer)
-                .blockOptional().orElse(false);
     }
 
     public final boolean tryDecrease(final String key, final long value) {
@@ -91,11 +75,15 @@ public final class StockHandler {
     }
 
     public final void increase(final String key, final long value) {
-        operator.increase(key, value).subscribe();
+        operator.increase(key, value)
+                .doOnError(e->log.error("Failure to increase stock. key : {}, value : {}", key, value))
+                .subscribe();
     }
 
     public final void decrease(final String key, final long value) {
-        operator.decrease(key, value).subscribe();
+        operator.decrease(key, value)
+                .doOnError(e->log.error("Failure to decrease stock. key : {}, value : {}", key, value))
+                .subscribe();
     }
 
     public final void safeSet(final String key, final long value) {
@@ -119,11 +107,15 @@ public final class StockHandler {
     }
 
     public final void set(final String key, final long value) {
-        operator.set(key, value).subscribe();
+        operator.set(key, value)
+                .doOnError(e->log.error("Failure to set stock. key : {}, value : {}", key, value))
+                .subscribe();
     }
 
     public final void remove(final String key) {
-        operator.remove(key).subscribe();
+        operator.remove(key)
+                .doOnError(e->log.error("Failure to remove stock. key : {}}", key))
+                .subscribe();
     }
 
     public final boolean isIn(final String key) {
@@ -139,16 +131,13 @@ public final class StockHandler {
         return !isIn(key);
     }
 
-    public final long getCurrentRemain(final String key) {
+    public final Optional<Long> getCurrentRemain(final String key) {
         return getCurrent(key)
                 .flatMap(stockCounter -> Mono.justOrEmpty(stockCounter.getValue()))
-                .blockOptional().orElseGet(() -> {
-                    log.error("Stock key is not exist in redis. {}", key);
-                    return 0L;
-                });
+                .blockOptional();
     }
 
-    private Mono<AtomicLong> getCurrent(final String key) {
+    private Mono<Counter> getCurrent(final String key) {
         return operator.get(key);
     }
 

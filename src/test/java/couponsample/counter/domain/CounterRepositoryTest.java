@@ -1,4 +1,4 @@
-package couponsample.atomiclong.domain;
+package couponsample.counter.domain;
 
 import com.google.common.collect.Lists;
 import couponsample.test.RedisTest;
@@ -11,15 +11,15 @@ import reactor.test.StepVerifier;
 import java.time.Duration;
 import java.util.List;
 
-@Import({AtomicLongRepository.class})
-class AtomicLongRepositoryTest extends RedisTest {
+@Import({CounterRepository.class})
+class CounterRepositoryTest extends RedisTest {
 
     @Autowired
-    private AtomicLongRepository repository;
+    private CounterRepository repository;
 
     @Test
     void save() {
-        Mono<Boolean> save = repository.save(AtomicLong.of("save", 1L));
+        Mono<Boolean> save = repository.save(Counter.of("save", 1L));
 
         StepVerifier.create(save)
                 .expectNext(true)
@@ -28,7 +28,7 @@ class AtomicLongRepositoryTest extends RedisTest {
 
     @Test
     void saveWithDuration() {
-        Mono<Boolean> save = repository.save(AtomicLong.of("saveWithDuration", 1L), Duration.ofMillis(1L));
+        Mono<Boolean> save = repository.save(Counter.of("saveWithDuration", 1L), Duration.ofMillis(1L));
 
         StepVerifier.create(save)
                 .expectNext(true)
@@ -37,7 +37,7 @@ class AtomicLongRepositoryTest extends RedisTest {
 
     @Test
     void saveAll() {
-        List<AtomicLong> counters = Lists.newArrayList(AtomicLong.of("saveAll-1", 1L), AtomicLong.of("saveAll-2", 1L));
+        List<Counter> counters = Lists.newArrayList(Counter.of("saveAll-1", 1L), Counter.of("saveAll-2", 1L));
         Mono<Boolean> save = repository.saveAll(counters);
 
         StepVerifier.create(save)
@@ -47,7 +47,7 @@ class AtomicLongRepositoryTest extends RedisTest {
 
     @Test
     void delete() {
-        repository.save(AtomicLong.of("delete", 1L)).subscribe();
+        repository.save(Counter.of("delete", 1L)).subscribe();
 
         Mono<Boolean> delete = repository.delete("delete");
         StepVerifier.create(delete)
@@ -57,7 +57,7 @@ class AtomicLongRepositoryTest extends RedisTest {
 
     @Test
     void deleteById() {
-        repository.save(AtomicLong.of("deleteById", 1L)).subscribe();
+        repository.save(Counter.of("deleteById", 1L)).subscribe();
 
         Mono<Long> delete = repository.deleteById("deleteById");
         StepVerifier.create(delete)
@@ -67,7 +67,7 @@ class AtomicLongRepositoryTest extends RedisTest {
 
     @Test
     void deleteAllById() {
-        repository.save(AtomicLong.of("deleteAllById", 1L)).subscribe();
+        repository.save(Counter.of("deleteAllById", 1L)).subscribe();
 
         Mono<Long> delete = repository.deleteAllById(Lists.newArrayList("deleteAllById"));
         StepVerifier.create(delete)
@@ -77,7 +77,7 @@ class AtomicLongRepositoryTest extends RedisTest {
 
     @Test
     void findById() {
-        AtomicLong counter = AtomicLong.of("findById", 1L);
+        Counter counter = Counter.of("findById", 1L);
         repository.save(counter).subscribe();
 
         StepVerifier.create(repository.findById("findById"))
@@ -87,9 +87,9 @@ class AtomicLongRepositoryTest extends RedisTest {
 
     @Test
     void findAllById() {
-        AtomicLong counter1 = AtomicLong.of("findAllById-1", 1L);
-        AtomicLong counter2 = AtomicLong.of("findAllById-2", 1L);
-        List<AtomicLong> counters = Lists.newArrayList(counter1, counter2);
+        Counter counter1 = Counter.of("findAllById-1", 1L);
+        Counter counter2 = Counter.of("findAllById-2", 1L);
+        List<Counter> counters = Lists.newArrayList(counter1, counter2);
         repository.saveAll(counters).subscribe();
 
         StepVerifier.create(repository.findAllById(Lists.newArrayList("findAllById-1", "findAllById-2")))
@@ -100,7 +100,7 @@ class AtomicLongRepositoryTest extends RedisTest {
 
     @Test
     void increase() {
-        AtomicLong counter = AtomicLong.of("increase", 1L);
+        Counter counter = Counter.of("increase", 1L);
         repository.save(counter).subscribe();
 
         StepVerifier.create(repository.increase("increase", 1L))
@@ -110,7 +110,7 @@ class AtomicLongRepositoryTest extends RedisTest {
 
     @Test
     void decrease() {
-        AtomicLong counter = AtomicLong.of("decrease", 1L);
+        Counter counter = Counter.of("decrease", 1L);
         repository.save(counter).subscribe();
 
         StepVerifier.create(repository.decrease("decrease", 1L))
@@ -120,7 +120,7 @@ class AtomicLongRepositoryTest extends RedisTest {
 
     @Test
     void expire() {
-        AtomicLong counter = AtomicLong.of("expire", 1L);
+        Counter counter = Counter.of("expire", 1L);
         repository.save(counter).subscribe();
 
         StepVerifier.create(repository.expireById("expire", Duration.ofMillis(1L)))

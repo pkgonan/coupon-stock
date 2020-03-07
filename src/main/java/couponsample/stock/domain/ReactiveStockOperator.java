@@ -1,6 +1,6 @@
 package couponsample.stock.domain;
 
-import couponsample.atomiclong.domain.AtomicLong;
+import couponsample.counter.domain.Counter;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -26,8 +26,8 @@ public interface ReactiveStockOperator {
 
     Mono<Long> decreaseAndGet(String key, long value);
 
-    Mono<AtomicLong> get(String key);
+    Mono<Counter> get(String key);
 
-    Flux<AtomicLong> get(Iterable<String> keys);
+    Flux<Counter> get(Iterable<String> keys);
 
 }

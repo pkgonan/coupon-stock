@@ -5,6 +5,8 @@ import couponsample.stock.domain.Stock;
 import couponsample.stock.domain.StockHandler;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 @Component
 public class CouponStockHandler {
 
@@ -30,10 +32,6 @@ public class CouponStockHandler {
         handler.safeDecrease(generateStockKey(coupon));
     }
 
-    public final boolean tryIncrease(final Coupon coupon) {
-        return handler.tryIncrease(generateStockKey(coupon));
-    }
-
     public final boolean tryDecrease(final Coupon coupon) {
         return handler.tryDecrease(generateStockKey(coupon));
     }
@@ -44,10 +42,6 @@ public class CouponStockHandler {
 
     public final void safeDecrease(final Coupon coupon, final long value) {
         handler.safeDecrease(generateStockKey(coupon), value);
-    }
-
-    public final boolean tryIncrease(final Coupon coupon, final long value) {
-        return handler.tryIncrease(generateStockKey(coupon), value);
     }
 
     public final boolean tryDecrease(final Coupon coupon, final long value) {
@@ -73,7 +67,7 @@ public class CouponStockHandler {
         return handler.isNotIn(generateStockKey(coupon));
     }
 
-    public final long getCurrentRemain(final Coupon coupon) {
+    public final Optional<Long> getCurrentRemain(final Coupon coupon) {
         return handler.getCurrentRemain(generateStockKey(coupon));
     }
 

@@ -1,8 +1,8 @@
 package couponsample.stock.domain;
 
 import com.google.common.collect.Lists;
-import couponsample.atomiclong.domain.AtomicLong;
-import couponsample.atomiclong.domain.AtomicLongRepository;
+import couponsample.counter.domain.Counter;
+import couponsample.counter.domain.CounterRepository;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
@@ -16,17 +16,17 @@ import static org.mockito.Mockito.mock;
 class ReactiveStockOperatorImplTest {
 
     private static ReactiveStockOperator operator;
-    private static AtomicLongRepository repository;
+    private static CounterRepository repository;
 
     @BeforeAll
     static void beforeAll() {
-        repository = mock(AtomicLongRepository.class);
+        repository = mock(CounterRepository.class);
         operator = new ReactiveStockOperatorImpl(repository);
     }
 
     @Test
     void set() {
-        doReturn(Mono.just(Boolean.TRUE)).when(repository).save(any(AtomicLong.class));
+        doReturn(Mono.just(Boolean.TRUE)).when(repository).save(any(Counter.class));
 
         Mono<Boolean> set = operator.set("set", 1L);
         StepVerifier.create(set)
@@ -126,10 +126,10 @@ class ReactiveStockOperatorImplTest {
 
     @Test
     void get_key() {
-        AtomicLong counter = AtomicLong.of("get", 1L);
+        Counter counter = Counter.of("get", 1L);
         doReturn(Mono.just(counter)).when(repository).findById("get");
 
-        Mono<AtomicLong> get = operator.get("get");
+        Mono<Counter> get = operator.get("get");
         StepVerifier.create(get)
                 .expectNext(counter)
                 .verifyComplete();
@@ -137,14 +137,14 @@ class ReactiveStockOperatorImplTest {
 
     @Test
     void get_keys() {
-        AtomicLong counter1 = AtomicLong.of("get1", 1L);
-        AtomicLong counter2 = AtomicLong.of("get2", 2L);
-        AtomicLong counter3 = AtomicLong.of("get3", 3L);
-        Flux<AtomicLong> counterFlux = Flux.just(counter1, counter2, counter3);
+        Counter counter1 = Counter.of("get1", 1L);
+        Counter counter2 = Counter.of("get2", 2L);
+        Counter counter3 = Counter.of("get3", 3L);
+        Flux<Counter> counterFlux = Flux.just(counter1, counter2, counter3);
 
         doReturn(counterFlux).when(repository).findAllById(Lists.newArrayList("get1", "get2", "get3"));
 
-        Flux<AtomicLong> get = operator.get(Lists.newArrayList("get1", "get2", "get3"));
+        Flux<Counter> get = operator.get(Lists.newArrayList("get1", "get2", "get3"));
         StepVerifier.create(get)
                 .expectNext(counter1)
                 .expectNext(counter2)

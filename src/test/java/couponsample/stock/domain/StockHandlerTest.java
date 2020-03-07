@@ -1,11 +1,13 @@
 package couponsample.stock.domain;
 
-import couponsample.atomiclong.domain.AtomicLong;
+import couponsample.counter.domain.Counter;
 import couponsample.stock.exception.StockHandleFailureException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
+
+import java.util.Optional;
 
 import static org.mockito.Mockito.*;
 
@@ -18,29 +20,6 @@ class StockHandlerTest {
     void before() {
         operator = mock(ReactiveStockOperator.class);
         handler = new StockHandler(operator);
-    }
-
-    @Test
-    void tryIncrease_success() {
-        doReturn(Mono.just(1L)).when(operator).increaseAndGet("tryIncrease", 1L);
-
-        boolean tryIncrease = handler.tryIncrease("tryIncrease", 1L);
-        Assertions.assertTrue(tryIncrease);
-
-        verify(operator, times(1)).increaseAndGet("tryIncrease", 1L);
-    }
-
-    @Test
-    void tryIncrease_failure_overflow_recovery() {
-        doReturn(Mono.just(Long.MIN_VALUE)).when(operator).increaseAndGet("tryIncrease", 1L);
-        doReturn(Mono.empty()).when(operator).decrease("tryIncrease", 1L);
-
-        boolean tryIncrease = handler.tryIncrease("tryIncrease", 1L);
-        Assertions.assertFalse(tryIncrease);
-
-        /** Verify recovery **/
-        verify(operator, times(1)).increaseAndGet("tryIncrease", 1L);
-        verify(operator, times(1)).decrease("tryIncrease", 1L);
     }
 
     @Test
@@ -193,8 +172,8 @@ class StockHandlerTest {
 
     @Test
     void isIn_true_positive_value() {
-        AtomicLong atomicLong = AtomicLong.of("isIn", 1L);
-        doReturn(Mono.just(atomicLong)).when(operator).get("isIn");
+        Counter counter = Counter.of("isIn", 1L);
+        doReturn(Mono.just(counter)).when(operator).get("isIn");
 
         boolean isIn = handler.isIn("isIn");
         Assertions.assertTrue(isIn);
@@ -204,8 +183,8 @@ class StockHandlerTest {
 
     @Test
     void isIn_false_zero_value() {
-        AtomicLong atomicLong = AtomicLong.of("isIn", 0L);
-        doReturn(Mono.just(atomicLong)).when(operator).get("isIn");
+        Counter counter = Counter.of("isIn", 0L);
+        doReturn(Mono.just(counter)).when(operator).get("isIn");
 
         boolean isIn = handler.isIn("isIn");
         Assertions.assertFalse(isIn);
@@ -215,8 +194,8 @@ class StockHandlerTest {
 
     @Test
     void isIn_false_negative_value() {
-        AtomicLong atomicLong = AtomicLong.of("isIn", -1L);
-        doReturn(Mono.just(atomicLong)).when(operator).get("isIn");
+        Counter counter = Counter.of("isIn", -1L);
+        doReturn(Mono.just(counter)).when(operator).get("isIn");
 
         boolean isIn = handler.isIn("isIn");
         Assertions.assertFalse(isIn);
@@ -226,8 +205,8 @@ class StockHandlerTest {
 
     @Test
     void isIn_false_null_value() {
-        AtomicLong atomicLong = AtomicLong.of("isIn", null);
-        doReturn(Mono.just(atomicLong)).when(operator).get("isIn");
+        Counter counter = Counter.of("isIn", null);
+        doReturn(Mono.just(counter)).when(operator).get("isIn");
 
         boolean isIn = handler.isIn("isIn");
         Assertions.assertFalse(isIn);
@@ -237,11 +216,13 @@ class StockHandlerTest {
 
     @Test
     void getCurrentRemain() {
-        AtomicLong atomicLong = AtomicLong.of("getCurrentRemain", 1L);
-        doReturn(Mono.just(atomicLong)).when(operator).get("getCurrentRemain");
+        Counter counter = Counter.of("getCurrentRemain", 1L);
+        doReturn(Mono.just(counter)).when(operator).get("getCurrentRemain");
 
-        long getCurrentRemain = handler.getCurrentRemain("getCurrentRemain");
-        Assertions.assertEquals(1L, getCurrentRemain);
+        Optional<Long> optionalCurrentRemain = handler.getCurrentRemain("getCurrentRemain");
+
+        Assertions.assertTrue(optionalCurrentRemain.isPresent());
+        Assertions.assertEquals(1L, optionalCurrentRemain.get());
 
         verify(operator, times(1)).get("getCurrentRemain");
     }

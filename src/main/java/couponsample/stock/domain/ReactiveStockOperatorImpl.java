@@ -1,7 +1,7 @@
 package couponsample.stock.domain;
 
-import couponsample.atomiclong.domain.AtomicLong;
-import couponsample.atomiclong.domain.AtomicLongRepository;
+import couponsample.counter.domain.Counter;
+import couponsample.counter.domain.CounterRepository;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -9,15 +9,15 @@ import reactor.core.publisher.Mono;
 @Component
 class ReactiveStockOperatorImpl implements ReactiveStockOperator {
 
-    private final AtomicLongRepository repository;
+    private final CounterRepository repository;
 
-    ReactiveStockOperatorImpl(final AtomicLongRepository repository) {
+    ReactiveStockOperatorImpl(final CounterRepository repository) {
         this.repository = repository;
     }
 
     @Override
     public Mono<Boolean> set(final String key, final long value) {
-        return repository.save(AtomicLong.of(key, value));
+        return repository.save(Counter.of(key, value));
     }
 
     @Override
@@ -66,12 +66,12 @@ class ReactiveStockOperatorImpl implements ReactiveStockOperator {
     }
 
     @Override
-    public Mono<AtomicLong> get(final String key) {
+    public Mono<Counter> get(final String key) {
         return repository.findById(key);
     }
 
     @Override
-    public Flux<AtomicLong> get(final Iterable<String> keys) {
+    public Flux<Counter> get(final Iterable<String> keys) {
         return repository.findAllById(keys);
     }
 }

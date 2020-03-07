@@ -29,8 +29,8 @@ public class CouponStockService extends EventPublisherService {
         ensureNotEditable(coupon);
         ensureStockExist(coupon);
 
-        final long currentRemain = couponStockHandler.getCurrentRemain(coupon);
-        coupon.syncCurrentStock(currentRemain);
+        final Optional<Long> optionalCurrentRemain = couponStockHandler.getCurrentRemain(coupon);
+        optionalCurrentRemain.ifPresent(coupon::syncCurrentStock);
 
         return toDto(coupon.getStock());
     }
